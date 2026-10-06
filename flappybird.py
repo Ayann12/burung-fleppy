@@ -2,6 +2,22 @@ import pygame
 from sys import exit
 import random
 
+import os
+import sys
+
+# =========================
+# resource convert img
+# =========================
+def resource_path(path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, path)
+
+
+
 # =========================
 # GAME VARIABLES
 # =========================
@@ -74,31 +90,31 @@ clock = pygame.time.Clock()
 # =========================
 # GAME IMAGES
 # =========================
-background_image = pygame.image.load(
+background_image = pygame.image.load(resource_path(
     "flappybirdbg.png"
-)
+))
 
-bird_image = pygame.image.load(
+bird_image = pygame.image.load(resource_path(
     "flappybird.png"
-)
+))
 
 bird_image = pygame.transform.scale(
     bird_image,
     (bird_width, bird_height)
 )
 
-top_pipe_image = pygame.image.load(
+top_pipe_image = pygame.image.load(resource_path(
     "toppipe.png"
-)
+))
 
 top_pipe_image = pygame.transform.scale(
     top_pipe_image,
     (pipe_width, pipe_height)
 )
 
-bottom_pipe_image = pygame.image.load(
+bottom_pipe_image = pygame.image.load(resource_path(
     "bottompipe.png"
-)
+))
 
 bottom_pipe_image = pygame.transform.scale(
     bottom_pipe_image,
@@ -118,6 +134,7 @@ velocity_y = 0
 gravity = 0.4
 
 score = 0
+best_score = 0
 game_over = False
 
 
@@ -147,7 +164,7 @@ button_font = pygame.font.SysFont(
 # =========================
 button_rect = pygame.Rect(
     GAME_WIDTH // 2 - 100,
-    GAME_HEIGHT // 2,
+    GAME_HEIGHT // 2 + 20,
     200,
     60
 )
@@ -158,26 +175,25 @@ button_rect = pygame.Rect(
 # =========================
 def draw():
 
-    # Background
     window.blit(
         background_image,
         (0, 0)
     )
 
-    # Bird
     window.blit(
         bird.img,
         bird
     )
 
-    # Pipes
     for pipe in pipes:
         window.blit(
             pipe.img,
             pipe
         )
 
-    # Score
+    # =========================
+    # SCORE
+    # =========================
     text_str = str(int(score))
 
     text_render = score_font.render(
@@ -212,7 +228,9 @@ def draw():
             (0, 0)
         )
 
-        # GAME OVER TEXT
+        # =========================
+        # GAME OVER
+        # =========================
         game_over_text = game_over_font.render(
             "GAME OVER",
             True,
@@ -222,7 +240,7 @@ def draw():
         game_over_text_rect = game_over_text.get_rect(
             center=(
                 GAME_WIDTH // 2,
-                GAME_HEIGHT // 2 - 70
+                GAME_HEIGHT // 2 - 100
             )
         )
 
@@ -231,7 +249,9 @@ def draw():
             game_over_text_rect
         )
 
+        # =========================
         # SCORE
+        # =========================
         score_text = button_font.render(
             "Score: " + str(int(score)),
             True,
@@ -241,7 +261,7 @@ def draw():
         score_text_rect = score_text.get_rect(
             center=(
                 GAME_WIDTH // 2,
-                GAME_HEIGHT // 2 - 25
+                GAME_HEIGHT // 2 - 55
             )
         )
 
@@ -251,9 +271,29 @@ def draw():
         )
 
         # =========================
+        # BEST SCORE
+        # =========================
+        best_score_text = button_font.render(
+            "Best Score: " + str(int(best_score)),
+            True,
+            "Yellow"
+        )
+
+        best_score_text_rect = best_score_text.get_rect(
+            center=(
+                GAME_WIDTH // 2,
+                GAME_HEIGHT // 2 - 20
+            )
+        )
+
+        window.blit(
+            best_score_text,
+            best_score_text_rect
+        )
+
+        # =========================
         # BUTTON MAIN LAGI
         # =========================
-
         pygame.draw.rect(
             window,
             (50, 200, 80),
@@ -261,7 +301,6 @@ def draw():
             border_radius=10
         )
 
-        # Button text
         button_text = button_font.render(
             "MAIN LAGI",
             True,
@@ -285,6 +324,7 @@ def move():
 
     global velocity_y
     global score
+    global best_score
     global game_over
 
     # Gravity
@@ -304,6 +344,10 @@ def move():
 
         game_over = True
 
+        # Update best score
+        if score > best_score:
+            best_score = score
+
         return
 
     # Move pipes
@@ -311,21 +355,33 @@ def move():
 
         pipe.x += velocity_x
 
-        # Score
+        # =========================
+        # SCORE
+        # =========================
         if not pipe.passed and bird.x > pipe.x + pipe.width:
 
             score += 0.5
 
             pipe.passed = True
 
-        # Collision
+            # Update best score
+            if score > best_score:
+                best_score = score
+
+        # =========================
+        # COLLISION
+        # =========================
         if bird.colliderect(pipe):
 
             game_over = True
 
+            # Update best score
+            if score > best_score:
+                best_score = score
+
             return
 
-    # Remove pipes that are outside screen
+    # Remove pipes outside screen
     while len(pipes) > 0 and pipes[0].x < -pipe_width:
 
         pipes.pop(0)
@@ -418,7 +474,6 @@ while True:
                 pygame.K_UP
             ):
 
-                # Only fly when game is running
                 if not game_over:
 
                     velocity_y = -6
@@ -430,7 +485,6 @@ while True:
 
             if game_over:
 
-                # Check MAIN LAGI button
                 if button_rect.collidepoint(
                     event.pos
                 ):
@@ -447,7 +501,7 @@ while True:
                     # Reset score
                     score = 0
 
-                    # Start game again
+                    # Start game
                     game_over = False
 
     # =========================
