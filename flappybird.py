@@ -1,5 +1,6 @@
 import pygame
 from sys import exit
+import random
 
 #game variables
 GAME_WIDTH = 360
@@ -40,6 +41,7 @@ bottom_pipe_image = pygame.transform.scale(bottom_pipe_image, (pipe_width, pipe_
 #game logic
 bird = Bird(bird_image)
 pipes = []
+velocity_x = -2 #move pipes to the left speed (simulates bird moving right)
 
 def draw():
     window.blit(background_image,(0,0))
@@ -48,9 +50,21 @@ def draw():
     for pipe in pipes:
         window.blit(pipe.img, pipe)
 
+def move():
+    for pipe in pipes:
+        pipe.x += velocity_x
+
 def create_pipes():
+    random_pipe_y = pipe_y - pipe_height/4 - random.random()*(pipe_height/2) #0-h/2
+    opening_space = GAME_HEIGHT/4
+
     top_pipe = Pipe(top_pipe_image)
+    top_pipe.y = random_pipe_y 
     pipes.append(top_pipe)
+
+    bottom_pipe = Pipe(bottom_pipe_image)
+    bottom_pipe.y = top_pipe.y + top_pipe.height + opening_space
+    pipes.append(bottom_pipe)
 
     print(len(pipes))
 
@@ -70,7 +84,8 @@ while True: #game loop
 
         if event.type == create_pipes_timer:
             create_pipes()
-        
+
+    move()   
     draw()
     pygame.display.update()
     clock.tick(60) #60 fps
