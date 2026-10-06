@@ -18,6 +18,7 @@ def resource_path(path):
 
 
 
+
 # =========================
 # GAME VARIABLES
 # =========================
@@ -123,7 +124,7 @@ bottom_pipe_image = pygame.transform.scale(
 
 
 # =========================
-# GAME LOGIC
+# GAME OBJECTS
 # =========================
 bird = Bird(bird_image)
 
@@ -135,57 +136,232 @@ gravity = 0.4
 
 score = 0
 best_score = 0
+
 game_over = False
+
+# =========================
+# GAME STATE
+# =========================
+# menu = Main Menu
+# playing = Game
+game_state = "menu"
 
 
 # =========================
 # FONT
 # =========================
+
+# Main menu title
+title_font = pygame.font.SysFont(
+    "Comic Sans MS",
+    32,
+    bold=True
+)
+
+# Score
 score_font = pygame.font.SysFont(
     "Comic Sans MS",
     45
 )
 
+# Game Over
 game_over_font = pygame.font.SysFont(
     "Comic Sans MS",
     40,
     bold=True
 )
 
+# Buttons
 button_font = pygame.font.SysFont(
     "Comic Sans MS",
-    25,
+    20,
     bold=True
+)
+
+# Small text
+small_font = pygame.font.SysFont(
+    "Comic Sans MS",
+    18
 )
 
 
 # =========================
-# MAIN LAGI BUTTON
+# BUTTONS
 # =========================
-button_rect = pygame.Rect(
+
+# MULAI
+start_button = pygame.Rect(
+    GAME_WIDTH // 2 - 75,
+    GAME_HEIGHT // 2 - 10,
+    150,
+    45
+)
+
+# KELUAR
+exit_button = pygame.Rect(
+    GAME_WIDTH // 2 - 75,
+    GAME_HEIGHT // 2 + 50,
+    150,
+    45
+)
+
+# MAIN LAGI
+restart_button = pygame.Rect(
     GAME_WIDTH // 2 - 100,
     GAME_HEIGHT // 2 + 20,
     200,
     60
 )
 
+# MENU UTAMA
+menu_button = pygame.Rect(
+    GAME_WIDTH // 2 - 100,
+    GAME_HEIGHT // 2 + 90,
+    200,
+    50
+)
+
 
 # =========================
-# DRAW
+# DRAW BUTTON
 # =========================
-def draw():
+def draw_button(rect, text, color):
 
+    pygame.draw.rect(
+        window,
+        color,
+        rect,
+        border_radius=10
+    )
+
+    text_surface = button_font.render(
+        text,
+        True,
+        "White"
+    )
+
+    text_rect = text_surface.get_rect(
+        center=rect.center
+    )
+
+    window.blit(
+        text_surface,
+        text_rect
+    )
+
+
+# =========================
+# MAIN MENU
+# =========================
+def draw_main_menu():
+
+    # Background
     window.blit(
         background_image,
         (0, 0)
     )
 
+    # Dark overlay
+    overlay = pygame.Surface(
+        (GAME_WIDTH, GAME_HEIGHT)
+    )
+
+    overlay.set_alpha(70)
+
+    overlay.fill(
+        (0, 0, 0)
+    )
+
+    window.blit(
+        overlay,
+        (0, 0)
+    )
+
+    # =========================
+    # TITLE
+    # =========================
+
+    title_text = title_font.render(
+        "BURUNG FLEPY",
+        True,
+        "White"
+    )
+
+    title_rect = title_text.get_rect(
+        center=(
+            GAME_WIDTH // 2,
+            GAME_HEIGHT // 2 - 100
+        )
+    )
+
+    window.blit(
+        title_text,
+        title_rect
+    )
+
+    # =========================
+    # BEST SCORE
+    # =========================
+
+    best_text = small_font.render(
+        "Best Score: " + str(int(best_score)),
+        True,
+        "Yellow"
+    )
+
+    best_rect = best_text.get_rect(
+        center=(
+            GAME_WIDTH // 2,
+            GAME_HEIGHT // 2 - 60
+        )
+    )
+
+    window.blit(
+        best_text,
+        best_rect
+    )
+
+    # =========================
+    # MULAI
+    # =========================
+
+    draw_button(
+        start_button,
+        "MULAI",
+        (50, 180, 80)
+    )
+
+    # =========================
+    # KELUAR
+    # =========================
+
+    draw_button(
+        exit_button,
+        "KELUAR",
+        (200, 60, 60)
+    )
+
+
+# =========================
+# DRAW GAME
+# =========================
+def draw_game():
+
+    # Background
+    window.blit(
+        background_image,
+        (0, 0)
+    )
+
+    # Bird
     window.blit(
         bird.img,
         bird
     )
 
+    # Pipes
     for pipe in pipes:
+
         window.blit(
             pipe.img,
             pipe
@@ -194,6 +370,7 @@ def draw():
     # =========================
     # SCORE
     # =========================
+
     text_str = str(int(score))
 
     text_render = score_font.render(
@@ -207,114 +384,141 @@ def draw():
         (5, 0)
     )
 
+
+# =========================
+# GAME OVER SCREEN
+# =========================
+def draw_game_over():
+
+    # Draw game first
+    draw_game()
+
+    # Dark overlay
+    overlay = pygame.Surface(
+        (GAME_WIDTH, GAME_HEIGHT)
+    )
+
+    overlay.set_alpha(170)
+
+    overlay.fill(
+        (0, 0, 0)
+    )
+
+    window.blit(
+        overlay,
+        (0, 0)
+    )
+
     # =========================
-    # GAME OVER POPUP
+    # GAME OVER
     # =========================
-    if game_over:
 
-        # Dark transparent overlay
-        overlay = pygame.Surface(
-            (GAME_WIDTH, GAME_HEIGHT)
+    game_over_text = game_over_font.render(
+        "GAME OVER",
+        True,
+        "White"
+    )
+
+    game_over_rect = game_over_text.get_rect(
+        center=(
+            GAME_WIDTH // 2,
+            GAME_HEIGHT // 2 - 100
         )
+    )
 
-        overlay.set_alpha(160)
+    window.blit(
+        game_over_text,
+        game_over_rect
+    )
 
-        overlay.fill(
-            (0, 0, 0)
+    # =========================
+    # SCORE
+    # =========================
+
+    score_text = button_font.render(
+        "Score: " + str(int(score)),
+        True,
+        "White"
+    )
+
+    score_rect = score_text.get_rect(
+        center=(
+            GAME_WIDTH // 2,
+            GAME_HEIGHT // 2 - 55
         )
+    )
 
-        window.blit(
-            overlay,
-            (0, 0)
-        )
+    window.blit(
+        score_text,
+        score_rect
+    )
 
-        # =========================
-        # GAME OVER
-        # =========================
-        game_over_text = game_over_font.render(
-            "GAME OVER",
-            True,
-            "White"
-        )
+    # =========================
+    # BEST SCORE
+    # =========================
 
-        game_over_text_rect = game_over_text.get_rect(
-            center=(
-                GAME_WIDTH // 2,
-                GAME_HEIGHT // 2 - 100
-            )
-        )
+    best_text = button_font.render(
+        "Best Score: " + str(int(best_score)),
+        True,
+        "Yellow"
+    )
 
-        window.blit(
-            game_over_text,
-            game_over_text_rect
+    best_rect = best_text.get_rect(
+        center=(
+            GAME_WIDTH // 2,
+            GAME_HEIGHT // 2 - 20
         )
+    )
 
-        # =========================
-        # SCORE
-        # =========================
-        score_text = button_font.render(
-            "Score: " + str(int(score)),
-            True,
-            "White"
-        )
+    window.blit(
+        best_text,
+        best_rect
+    )
 
-        score_text_rect = score_text.get_rect(
-            center=(
-                GAME_WIDTH // 2,
-                GAME_HEIGHT // 2 - 55
-            )
-        )
+    # =========================
+    # MAIN LAGI
+    # =========================
 
-        window.blit(
-            score_text,
-            score_text_rect
-        )
+    draw_button(
+        restart_button,
+        "MAIN LAGI",
+        (50, 200, 80)
+    )
 
-        # =========================
-        # BEST SCORE
-        # =========================
-        best_score_text = button_font.render(
-            "Best Score: " + str(int(best_score)),
-            True,
-            "Yellow"
-        )
+    # =========================
+    # MENU UTAMA
+    # =========================
 
-        best_score_text_rect = best_score_text.get_rect(
-            center=(
-                GAME_WIDTH // 2,
-                GAME_HEIGHT // 2 - 20
-            )
-        )
+    draw_button(
+        menu_button,
+        "MENU UTAMA",
+        (70, 120, 200)
+    )
 
-        window.blit(
-            best_score_text,
-            best_score_text_rect
-        )
 
-        # =========================
-        # BUTTON MAIN LAGI
-        # =========================
-        pygame.draw.rect(
-            window,
-            (50, 200, 80),
-            button_rect,
-            border_radius=10
-        )
+# =========================
+# RESET GAME
+# =========================
+def reset_game():
 
-        button_text = button_font.render(
-            "MAIN LAGI",
-            True,
-            "White"
-        )
+    global velocity_y
+    global score
+    global game_over
 
-        button_text_rect = button_text.get_rect(
-            center=button_rect.center
-        )
+    # Reset bird
+    bird.y = bird_y
 
-        window.blit(
-            button_text,
-            button_text_rect
-        )
+    # Reset velocity
+    velocity_y = 0
+
+    # Clear pipes
+    pipes.clear()
+
+    # Reset score
+    score = 0
+
+    # Reset game over
+    game_over = False
 
 
 # =========================
@@ -344,7 +548,6 @@ def move():
 
         game_over = True
 
-        # Update best score
         if score > best_score:
             best_score = score
 
@@ -358,31 +561,37 @@ def move():
         # =========================
         # SCORE
         # =========================
-        if not pipe.passed and bird.x > pipe.x + pipe.width:
+
+        if (
+            not pipe.passed
+            and bird.x > pipe.x + pipe.width
+        ):
 
             score += 0.5
 
             pipe.passed = True
 
-            # Update best score
             if score > best_score:
                 best_score = score
 
         # =========================
         # COLLISION
         # =========================
+
         if bird.colliderect(pipe):
 
             game_over = True
 
-            # Update best score
             if score > best_score:
                 best_score = score
 
             return
 
     # Remove pipes outside screen
-    while len(pipes) > 0 and pipes[0].x < -pipe_width:
+    while (
+        len(pipes) > 0
+        and pipes[0].x < -pipe_width
+    ):
 
         pipes.pop(0)
 
@@ -395,7 +604,8 @@ def create_pipes():
     random_pipe_y = (
         pipe_y
         - pipe_height / 4
-        - random.random() * (pipe_height / 2)
+        - random.random()
+        * (pipe_height / 2)
     )
 
     opening_space = GAME_HEIGHT / 4
@@ -443,11 +653,16 @@ pygame.time.set_timer(
 # =========================
 while True:
 
+    # =========================
+    # EVENTS
+    # =========================
+
     for event in pygame.event.get():
 
         # =========================
         # QUIT
         # =========================
+
         if event.type == pygame.QUIT:
 
             pygame.quit()
@@ -457,8 +672,10 @@ while True:
         # =========================
         # CREATE PIPES
         # =========================
+
         if (
             event.type == create_pipes_timer
+            and game_state == "playing"
             and not game_over
         ):
 
@@ -467,6 +684,7 @@ while True:
         # =========================
         # KEYBOARD
         # =========================
+
         if event.type == pygame.KEYDOWN:
 
             if event.key in (
@@ -474,47 +692,101 @@ while True:
                 pygame.K_UP
             ):
 
-                if not game_over:
+                if (
+                    game_state == "playing"
+                    and not game_over
+                ):
 
                     velocity_y = -6
 
         # =========================
         # MOUSE CLICK
         # =========================
+
         if event.type == pygame.MOUSEBUTTONDOWN:
 
-            if game_over:
+            mouse_pos = event.pos
 
-                if button_rect.collidepoint(
-                    event.pos
+            # =========================
+            # MAIN MENU
+            # =========================
+
+            if game_state == "menu":
+
+                # MULAI
+                if start_button.collidepoint(
+                    mouse_pos
                 ):
 
-                    # Reset bird
-                    bird.y = bird_y
+                    reset_game()
 
-                    # Reset velocity
-                    velocity_y = 0
+                    game_state = "playing"
 
-                    # Clear pipes
-                    pipes.clear()
+                # KELUAR
+                elif exit_button.collidepoint(
+                    mouse_pos
+                ):
 
-                    # Reset score
-                    score = 0
+                    pygame.quit()
 
-                    # Start game
-                    game_over = False
+                    exit()
+
+            # =========================
+            # GAME
+            # =========================
+
+            elif game_state == "playing":
+
+                if game_over:
+
+                    # MAIN LAGI
+                    if restart_button.collidepoint(
+                        mouse_pos
+                    ):
+
+                        reset_game()
+
+                    # MENU UTAMA
+                    elif menu_button.collidepoint(
+                        mouse_pos
+                    ):
+
+                        reset_game()
+
+                        game_state = "menu"
 
     # =========================
     # UPDATE GAME
     # =========================
-    if not game_over:
+
+    if (
+        game_state == "playing"
+        and not game_over
+    ):
 
         move()
 
     # =========================
     # DRAW
     # =========================
-    draw()
+
+    if game_state == "menu":
+
+        draw_main_menu()
+
+    elif game_state == "playing":
+
+        if game_over:
+
+            draw_game_over()
+
+        else:
+
+            draw_game()
+
+    # =========================
+    # UPDATE DISPLAY
+    # =========================
 
     pygame.display.update()
 
