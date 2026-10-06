@@ -42,6 +42,11 @@ bottom_pipe_image = pygame.transform.scale(bottom_pipe_image, (pipe_width, pipe_
 bird = Bird(bird_image)
 pipes = []
 velocity_x = -2 #move pipes to the left speed (simulates bird moving right)
+velocity_y = 0 #move burung up/down speed
+gravity = 0.4
+score = 0 
+game_over = False
+
 
 def draw():
     window.blit(background_image,(0,0))
@@ -50,9 +55,27 @@ def draw():
     for pipe in pipes:
         window.blit(pipe.img, pipe)
 
+    text_str = str(int(score))
+
+    text_font = pygame.font.SysFont("Comic Sans MS", 45)
+    text_render = text_font.render(text_str, True, "White")
+    window.blit(text_render, (5, 0))
+
 def move():
+    global velocity_y, score
+    velocity_y += gravity
+    bird.y += velocity_y
+    bird.y = max(bird.y, 0)
+
     for pipe in pipes:
         pipe.x += velocity_x
+
+        if not pipe.passed and bird.x > pipe.x + pipe.width:
+            score += 0.5 #0.5 because there are 2 pipes! 0.5*2 = 1, 1 per set of pipes
+            pipe.passed = True
+
+    while len(pipes) > 0 and pipes[0].x <-pipe_width:
+        pipes.pop(0) #removes the pipe from the list
 
 def create_pipes():
     random_pipe_y = pipe_y - pipe_height/4 - random.random()*(pipe_height/2) #0-h/2
@@ -85,6 +108,9 @@ while True: #game loop
         if event.type == create_pipes_timer:
             create_pipes()
 
+        if event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_SPACE, pygame.K_UP):
+                    velocity_y = -6
     move()   
     draw()
     pygame.display.update()
