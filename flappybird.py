@@ -122,6 +122,13 @@ while True: #game loop
                 if event.key in (pygame.K_SPACE, pygame.K_UP):
                     velocity_y = -6
 
+
+                    #reset game
+                    if game_over:
+                        bird.y = bird_y
+                        pipes.clear()
+                        score = 0 
+                        game_over = False
     if not game_over:
         move()   
         draw()
