@@ -56,16 +56,22 @@ def draw():
         window.blit(pipe.img, pipe)
 
     text_str = str(int(score))
+    if game_over:
+        text_str = " Game Over: " + text_str 
 
     text_font = pygame.font.SysFont("Comic Sans MS", 45)
     text_render = text_font.render(text_str, True, "White")
     window.blit(text_render, (5, 0))
 
 def move():
-    global velocity_y, score
+    global velocity_y, score, game_over
     velocity_y += gravity
     bird.y += velocity_y
     bird.y = max(bird.y, 0)
+
+    if bird.y > GAME_HEIGHT:
+        game_over = True
+        return
 
     for pipe in pipes:
         pipe.x += velocity_x
@@ -73,6 +79,10 @@ def move():
         if not pipe.passed and bird.x > pipe.x + pipe.width:
             score += 0.5 #0.5 because there are 2 pipes! 0.5*2 = 1, 1 per set of pipes
             pipe.passed = True
+
+        if bird.colliderect(pipe):
+            game_over = True
+            return 
 
     while len(pipes) > 0 and pipes[0].x <-pipe_width:
         pipes.pop(0) #removes the pipe from the list
@@ -105,13 +115,15 @@ while True: #game loop
             pygame.quit()
             exit()
 
-        if event.type == create_pipes_timer:
+        if event.type == create_pipes_timer and not game_over:
             create_pipes()
 
         if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_SPACE, pygame.K_UP):
                     velocity_y = -6
-    move()   
-    draw()
-    pygame.display.update()
-    clock.tick(60) #60 fps
+
+    if not game_over:
+        move()   
+        draw()
+        pygame.display.update()
+        clock.tick(60) #60 fps
